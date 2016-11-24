@@ -1,0 +1,393 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+    <form action="#">
+        <div>
+            <div style="width:100px;float:left">1号位:</div>
+            <div style="width:150px;float:left"><select id="pos1_lv">
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                </select></div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="width:100px;float:left">2号位:</div>
+            <div style="width:120px;float:left">
+                <select id="pos2_type">
+                    <option value="spd">速度</option>
+                    <option value="atk_rate">攻击加成百分比</option>
+                    <option value="hp_rate">生命加成百分比</option>
+                </select>
+            </div>
+            <div style="width:150px;float:left">
+                <select id="pos2_lv">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="width:100px;float:left">3号位:</div>
+            <div style="width:150px;float:left">
+                <select id="pos3_lv">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="width:100px;float:left">4号位:</div>
+            <div style="width:120px;float:left">
+                <select id="pos4_type">
+                    <option value="atk_rate">攻击加成百分比</option>
+                    <option value="hp_rate">生命加成百分比</option>
+                </select>
+            </div>
+            <div style="width:150px;float:left">
+                <select id="pos4_lv">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="width:100px;float:left">5号位:</div>
+            <div style="width:150px;float:left">
+                <select id="pos5_lv">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="width:100px;float:left">6号位:</div>
+            <div style="width:120px;float:left">
+                <select id="pos6_type">
+                    <option value="atk_rate">攻击加成百分比</option>
+                    <option value="def_rate">防御加成百分比</option>
+                    <option value="hp_rate">生命加成百分比</option>
+                    <option value="crt_rate">暴击</option>
+                    <option value="crv_rate">暴伤</option>
+                </select>
+            </div>
+            <div style="width:150px;float:left">
+                <select id="pos6_lv">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </select>
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="width:80px;float:left">基本攻击:</div>
+            <div style="width:80px;float:left">
+                <input style="width:60px" id="base_atk" type="text" value="800" />
+            </div>
+            <div style="width:80px;float:left">基本暴击:</div>
+            <div style="width:80px;float:left">
+                <input style="width:60px" id="base_crt" type="text" value="10" />
+            </div>
+            <div style="width:80px;float:left">基本暴伤:</div>
+            <div style="width:80px;float:left">
+                <input style="width:60px" id="base_crv" type="text" value="50" />
+            </div>
+            <div style="width:80px;float:left">基本生命:</div>
+            <div style="width:80px;float:left">
+                <input style="width:60px" id="base_hp" type="text" value="3000" />
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <div style="float:none;clear:both">
+                <div style="width:200px;float:left">强化次数(1-90):</div>
+                <div style="width:80px;float:left">
+                    <input style="width:60px" id="times" type="text" value="1" />
+                </div>
+                <input type="button" value="CALC" onclick="javascript: return calc();" />
+            </div>
+        </div>
+        <div style="float:none;clear:both">
+            <textarea id="result" style="width:500px;height:400px" readonly="readonly"></textarea>
+        </div>
+    </form>
+    
+    <script language="javascript">
+
+        var totalAtkVal = 0;
+        var totalAtkRate = 0;
+        var totalCrt = 0;
+        var totalCrv = 0;
+
+        // Get attack value base and gain
+        function getAttackVal(num) {
+            if (num == 1) {
+                var lv = getLv("pos1_lv");
+                switch (lv) {
+                    case 3:
+                        return new Array(33, 11);
+                    case 4:
+                        return new Array(49, 15);
+                    case 5:
+                        return new Array(65, 22);
+                    case 6:
+                        return new Array(81, 27);
+                    default:
+                        return new Array(0, 0);
+                }
+            } else if (num == 3 || num == 5) {
+                return new Array(0, 0);
+            } else {
+                return new Array(0, 0);
+            }
+        }
+
+        function getAttackRate(num) {
+            if (num == 1 || num == 3 || num == 5) {
+                return new Array(0, 0);
+            }
+            var t = getType("pos" + num + "_type");
+            if (t != "atk_rate") {
+                return new Array(0, 0);
+            }
+            var lv = getLv("pos" + num + "_lv");
+            switch (lv) {
+                case 3:
+                    return new Array(4, 2);
+                case 4:
+                    return new Array(6, 2);
+                case 5:
+                    return new Array(8, 2);
+                case 6:
+                    return new Array(10, 3);
+                default:
+                    return new Array(0, 0);
+            }
+        }
+
+        function getCrt(num) {
+            if (num != 6) {
+                return new Array(0, 0);
+            }
+            var t = getType("pos" + num + "_type");
+            if (t != "crt_rate") {
+                return new Array(0, 0);
+            }
+            var lv = getLv("pos" + num + "_lv");
+            switch (lv) {
+                case 3:
+                    return new Array(4, 2);
+                case 4:
+                    return new Array(6, 2);
+                case 5:
+                    return new Array(8, 2);
+                case 6:
+                    return new Array(10, 3);
+                default:
+                    return new Array(0, 0);
+            }
+        }
+
+        function getCrv(num) {
+            if (num != 6) {
+                return new Array(0, 0);
+            }
+            var t = getType("pos" + num + "_type");
+            if (t != "crv_rate") {
+                return new Array(0, 0);
+            }
+            var lv = getLv("pos" + num + "_lv");
+            switch (lv) {
+                case 3:
+                    return new Array(5, 3);
+                case 4:
+                    return new Array(9, 3);
+                case 5:
+                    return new Array(11, 4);
+                case 6:
+                    return new Array(14, 5);
+                default:
+                    return new Array(0, 0);
+            }
+        }
+
+        function getHp(num) {
+            if (num != 5) {
+                return new Array(0, 0);
+            }
+            var lv = getLv("pos" + num + "_lv");
+            switch (lv) {
+                case 3:
+                    return new Array(137, 46);
+                case 4:
+                    return new Array(206, 69);
+                case 5:
+                    return new Array(274, 92);
+                case 6:
+                    return new Array(342, 114);
+                default:
+                    return new Array(0, 0);
+            }
+        }
+
+        function getHpRate(num) {
+            if (num == 1 || num == 3 || num == 5) {
+                return new Array(0, 0);
+            }
+            var t = getType("pos" + num + "_type");
+            if (t != "hp_rate") {
+                return new Array(0, 0);
+            }
+            var lv = getLv("pos" + num + "_lv");
+            switch (lv) {
+                case 3:
+                    return new Array(4, 2);
+                case 4:
+                    return new Array(6, 2);
+                case 5:
+                    return new Array(8, 2);
+                case 6:
+                    return new Array(10, 3);
+                default:
+                    return new Array(0, 0);
+            }
+        }
+
+        function getLv(elem) {
+            return parseInt(document.getElementById(elem).value);
+        }
+
+        function getType(elem) {
+            return document.getElementById(elem).value;
+        }
+
+        var attackVals = new Array(6);
+        var attackRates = new Array(6);
+        var crts = new Array(6);
+        var crvs = new Array(6);
+        var hpVals = new Array(6);
+        var hpRates = new Array(6);
+
+        var totalAttack = 0;
+        var maxAttack = 0;
+        var totalHP = 0;
+        var maxHP = 0;
+        var maxAttackPath = new Array(6);
+        var maxHPPath = new Array(6);
+
+        function calc() {
+            var times = parseInt(document.getElementById("times").value);
+            if (times < 1 || times > 90) {
+                alert("强化次数需要在1到90之间");
+                return;
+            }
+            var s = "";
+
+            for (var i = 0; i < 6; ++i) {
+                attackVals[i] = getAttackVal(parseInt(i + 1));
+                attackRates[i] = getAttackRate(parseInt(i + 1));
+                crts[i] = getCrt(parseInt(i + 1));
+                crvs[i] = getCrv(parseInt(i + 1));
+                hpVals[i] = getHp(parseInt(i + 1));
+                hpRates[i] = getHpRate(parseInt(i + 1));
+                /*
+                s += (i + 1) + "-" + attackVals[i][0] + ":" + attackVals[i][1] + "\r\n";
+                s += (i + 1) + "-" + attackRates[i][0] + ":" + attackRates[i][1] + "\r\n";
+                s += (i + 1) + "-" + crts[i][0] + ":" + crts[i][1] + "\r\n";
+                s += (i + 1) + "-" + crvs[i][0] + ":" + crvs[i][1] + "\r\n";
+                s += (i + 1) + "-" + hpVals[i][0] + ":" + hpVals[i][1] + "\r\n";
+                s += (i + 1) + "-" + hpRates[i][0] + ":" + hpRates[i][1] + "\r\n";*/
+            }
+
+            totalAttack = 0;
+            maxAttack = 0;
+            totalHP = 0;
+            maxHP = 0;
+
+            var baseAttack = parseFloat(document.getElementById("base_atk").value);
+            var baseHp = parseFloat(document.getElementById("base_hp").value);
+            var baseCrt = parseFloat(document.getElementById("base_crt").value);
+            var baseCrv = parseFloat(document.getElementById("base_crv").value);
+            doCalc(new Array(6), baseAttack, 0, baseHp, 0, baseCrt, baseCrv, 0, times);
+
+            s += "最大平均攻击:" + maxAttack + "\r\n" + dumpPath(maxAttackPath) + "\r\n";
+            s += "最大生命值:" + maxHP + "\r\n" + dumpPath(maxHPPath);
+            document.getElementById("result").value = s;
+        }
+
+        function dumpPath(path) {
+            var s = "";
+            for (var i = 0; i < 6; ++i) {
+                s += (i + 1) + ":" + path[i] + " ";
+            }
+            return s;
+        }
+
+        function calcAverageAttack(attack, attackRate, crt, crv) {
+            return attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100));
+        }
+
+        function calcHP(hp, hpRate) {
+            return hp * (1 + hpRate / 100);
+        }
+
+        function doCalc(path, attack, attackRate, hp, hpRate, crt, crv, index, leftCount) {
+            if (index >= 6) {
+                // result
+                var avgAttack = calcAverageAttack(attack, attackRate, crt, crv);
+                var hp = calcHP(hp, hpRate);
+                //alert("attack=" + attack + ",rate=" + attackRate + ",hp=" + hp + ",rate=" + hpRate + ",crt=" + crt + ",crv=" + crv);
+                //alert("hp=" + hp);
+                //alert("avgattack=" + avgAttack);
+                if (avgAttack >= maxAttack) {
+                    maxAttack = avgAttack;
+                    recordPath(maxAttackPath, path);
+                }
+                if (hp >= maxHP) {
+                    maxHP = hp;
+                    recordPath(maxHPPath, path);
+                }
+                return;
+            }
+            var max = leftCount > 15 ? 15 : leftCount;
+            var min = index >= 5 ? leftCount : 0;
+            for (var i = min; i <= max; ++i) {
+                var bonusAttackVal = attackVals[index][0] + attackVals[index][1] * i;
+                var bonusAttackRate = attackRates[index][0] + attackRates[index][1] * i;
+                var bonusHP = hpVals[index][0] + hpVals[index][1] * i;
+                var bonusHPRate = hpRates[index][0] + hpRates[index][1] * i;
+                var bonusCrt = crts[index][0] + crts[index][1] * i;
+                var bonusCrv = crvs[index][0] + crvs[index][1] * i;
+                path[index] = i;
+                doCalc(path,
+                    attack + bonusAttackVal,
+                    attackRate + bonusAttackRate,
+                    hp + bonusHP,
+                    hpRate + bonusHPRate,
+                    crt + bonusCrt,
+                    crv + bonusCrv,
+                    index + 1,
+                    leftCount - i
+                    );
+            }
+        }
+
+        function recordPath(dest, src) {
+            for (var i = 0; i < 6; ++i) {
+                dest[i] = src[i];
+            }
+        }
+    </script>
+</body>
+
+</html>
