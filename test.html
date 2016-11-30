@@ -48,6 +48,7 @@
                 <select id="pos4_type">
                     <option value="atk_rate">攻击加成百分比</option>
                     <option value="hp_rate">生命加成百分比</option>
+                    <option value="effect_hit">效果命中</option>
                 </select>
             </div>
             <div style="width:150px;float:left">
@@ -103,9 +104,19 @@
             <div style="width:80px;float:left">
                 <input style="width:60px" id="base_crv" type="text" value="50" />
             </div>
+        </div>
+        <div style="float:none;clear:both">
             <div style="width:80px;float:left">基本生命:</div>
             <div style="width:80px;float:left">
                 <input style="width:60px" id="base_hp" type="text" value="3000" />
+            </div>
+            <div style="width:80px;float:left">基本命中:</div>
+            <div style="width:80px;float:left">
+                <input style="width:60px" id="base_effect_hit" type="text" value="0" />
+            </div>
+            <div style="width:80px;float:left">目标防御:</div>
+            <div style="width:80px;float:left">
+                <input style="width:60px" id="target_def" type="text" value="150" />
             </div>
         </div>
         <div style="float:none;clear:both">
@@ -116,7 +127,9 @@
                         <option value="0">普通</option>
                         <option value="1">鸟(针女)</option>
                         <option value="2">荒川(针女</option>
-<!--                        <option value="3">红叶</option> -->
+                        <option value="3">红叶</option> 
+                        <option value="4">鸟(网切)</option>
+                        <option value="5">荒川(网切)</option>
                     </select>
                 </div>
                 <div style="width:200px;float:left">强化次数(1-90):</div>
@@ -272,6 +285,29 @@
             }
         }
 
+        function getEffectHit(num) {
+            if (num != 4) {
+                return new Array(0, 0);
+            }
+            var t = getType("pos" + num + "_type");
+            if (t != "effect_hit") {
+                return new Array(0, 0);
+            }
+            var lv = getLv("pos" + num + "_lv");
+            switch (lv) {
+                case 3:
+                    return new Array(4, 2);
+                case 4:
+                    return new Array(6, 2);
+                case 5:
+                    return new Array(8, 2);
+                case 6:
+                    return new Array(10, 3);
+                default:
+                    return new Array(0, 0);
+            }
+        }
+
         function getLv(elem) {
             return parseInt(document.getElementById(elem).value);
         }
@@ -286,6 +322,7 @@
         var crvs = new Array(6);
         var hpVals = new Array(6);
         var hpRates = new Array(6);
+        var effectHits = new Array(6);
 
         var totalAttack = 0;
         var maxAttack = 0;
@@ -309,13 +346,15 @@
                 crvs[i] = getCrv(parseInt(i + 1));
                 hpVals[i] = getHp(parseInt(i + 1));
                 hpRates[i] = getHpRate(parseInt(i + 1));
+                effectHits[i] = getEffectHit(parseInt(i + 1));
                 /*
                 s += (i + 1) + "-" + attackVals[i][0] + ":" + attackVals[i][1] + "\r\n";
                 s += (i + 1) + "-" + attackRates[i][0] + ":" + attackRates[i][1] + "\r\n";
                 s += (i + 1) + "-" + crts[i][0] + ":" + crts[i][1] + "\r\n";
                 s += (i + 1) + "-" + crvs[i][0] + ":" + crvs[i][1] + "\r\n";
                 s += (i + 1) + "-" + hpVals[i][0] + ":" + hpVals[i][1] + "\r\n";
-                s += (i + 1) + "-" + hpRates[i][0] + ":" + hpRates[i][1] + "\r\n";*/
+                s += (i + 1) + "-" + hpRates[i][0] + ":" + hpRates[i][1] + "\r\n";
+                s += (i + 1) + "-" + effectHits[i][0] + ":" + effectHits[i][1] + "\r\n";*/
             }
 
             totalAttack = 0;
@@ -328,7 +367,9 @@
             var baseCrt = parseFloat(document.getElementById("base_crt").value);
             var baseCrv = parseFloat(document.getElementById("base_crv").value);
             var mode = parseInt(document.getElementById("mode").value);
-            doCalc(new Array(6), baseAttack, 0, baseHp, 0, baseCrt, baseCrv, 0, times, mode);
+            var baseEffectHit = parseInt(document.getElementById("base_effect_hit").value);
+            var targetDef = parseInt(document.getElementById("target_def").value);
+            doCalc(new Array(6), baseAttack, 0, baseHp, 0, baseCrt, baseCrv, 0, times, mode, targetDef, baseEffectHit);
 
             s += "最大平均攻击:" + maxAttack + "\r\n" + dumpPath(maxAttackPath) + "\r\n";
             s += "最大生命值:" + maxHP + "\r\n" + dumpPath(maxHPPath);
@@ -343,20 +384,37 @@
             return s;
         }
 
-        function calcAverageAttack(attack, attackRate, crt, crv, mode) {
+        function calcAverageAttack(attack, attackRate, crt, crv, mode, defense, effect_hit) {
+            var damagePer = 300.0 / (300.0 + defense);
             switch (mode) {
                 case 0:
-                    return attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100));
+                    return attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * damagePer;
                 case 1: {
-                        var small = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 0.99;
-                        var large = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 0.87;
-                        var extra = (crt / 100) * attack * (1 + attackRate / 100) * 1.2 * 4 * 0.4;
+                        var small = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 0.33 * damagePer * 3;
+                        var large = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 0.87 * damagePer;
+                        var extra = (crt / 100) * attack * (1 + attackRate / 100) * 1.2 * 4 * 0.4 * damagePer;
                         return small + large + extra;
                     }
                 case 2: {
-                        var each = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 1.3;
-                        var extra = (crt / 100) * attack * (1 + attackRate / 100) * 1.2 * 2 * 0.4;
+                        var each = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 1.3 * 1.2 * damagePer;
+                        var extra = (crt / 100) * attack * (1 + attackRate / 100) * 1.2 * 2 * 0.4 * damagePer;
                         return each * 2 + extra;
+                    }
+                case 3: {
+                        var base = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 1.32 * damagePer;
+                        var extra = (effect_hit / 100) * attack * (1 + attackRate / 100) * 0.5 * damagePer;
+                        return base + extra;
+                    }
+                case 4: {
+                        damagePer = 300.0 / (300.0 + defense * 0.8);
+                        var small = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 0.33 * damagePer * 3;
+                        var large = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 0.87 * damagePer;
+                        return small + large;
+                    }
+                case 5: {
+                        damagePer = 300.0 / (300.0 + defense * 0.8);
+                        var each = attack * (1 + attackRate / 100) * (1 + (crt / 100) * (crv / 100)) * 1.3 * 1.2 * damagePer;
+                        return each * 2;
                     }
                 default:
                     return 0;
@@ -368,10 +426,10 @@
             return hp * (1 + hpRate / 100);
         }
 
-        function doCalc(path, attack, attackRate, hp, hpRate, crt, crv, index, leftCount, mode) {
+        function doCalc(path, attack, attackRate, hp, hpRate, crt, crv, index, leftCount, mode, defense, effect_hit) {
             if (index >= 6) {
                 // result
-                var avgAttack = calcAverageAttack(attack, attackRate, crt, crv, mode);
+                var avgAttack = calcAverageAttack(attack, attackRate, crt, crv, mode, defense, effect_hit);
                 var hp = calcHP(hp, hpRate);
                 //alert("attack=" + attack + ",rate=" + attackRate + ",hp=" + hp + ",rate=" + hpRate + ",crt=" + crt + ",crv=" + crv);
                 //alert("hp=" + hp);
@@ -395,6 +453,7 @@
                 var bonusHPRate = hpRates[index][0] + hpRates[index][1] * i;
                 var bonusCrt = crts[index][0] + crts[index][1] * i;
                 var bonusCrv = crvs[index][0] + crvs[index][1] * i;
+                var bonusEffectHit = effectHits[index][0] + effectHits[index][1] * i;
                 path[index] = i;
                 doCalc(path,
                     attack + bonusAttackVal,
@@ -405,7 +464,9 @@
                     crv + bonusCrv,
                     index + 1,
                     leftCount - i,
-                    mode
+                    mode,
+                    defense,
+                    effect_hit + bonusEffectHit
                     );
             }
         }
